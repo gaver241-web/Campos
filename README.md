@@ -3,8 +3,8 @@
 Sistema con dos módulos: **Venta de Agua y Gas** y **Carwash** (próximamente).
 Mismo stack que gaveclean: React + Vite (frontend) + Express (backend) + MongoDB.
 
-## Diferencia clave vs gaveclean
-Este proyecto usa **MongoDB LOCAL** (instalado en el servidor con aaPanel), no MongoDB Atlas.
+## Base de datos
+Este proyecto usa **MongoDB Atlas** (nube), en un cluster propio (`Campos1`) **separado** del que usa gaveclean.
 La conexión se configura con la variable de entorno `MONGO_URL` (ver `.env.example`).
 
 ## Desarrollo local
@@ -22,10 +22,10 @@ node server.cjs       # sirve /dist + API en un solo puerto
 ```
 
 ## Despliegue en aaPanel (resumen)
-1. Instalar MongoDB en el servidor (vía App Store de aaPanel o manualmente) si aún no está instalado.
+1. En MongoDB Atlas → Network Access, agregar la IP del servidor (`38.250.228.100`) para permitir la conexión.
 2. Crear el sitio `campos.tudominio.com` en aaPanel (Website → Add site), tipo Node.js.
 3. Clonar/subir este repo a la carpeta del sitio.
-4. Crear archivo `.env` en la raíz basado en `.env.example`.
+4. Crear archivo `.env` en la raíz basado en `.env.example` (con el connection string de Atlas).
 5. Ejecutar `npm install && npm run build`.
 6. Configurar el gestor de procesos de Node en aaPanel (PM2) para correr `server.cjs` en el puerto definido (ej. 3002).
 7. Configurar el proxy reverso del sitio para apuntar al puerto de Node (Nginx reverse proxy, se hace desde el propio panel de "Website" → "Node Project").
@@ -37,5 +37,5 @@ src/
   pages/Home.jsx            → selector Agua-Gas / Carwash
   modules/aguagas/           → Dashboard, Inventario, Ventas, Balance
   modules/carwash/           → placeholder (siguiente etapa)
-server.cjs                  → API Express + MongoDB local
+server.cjs                  → API Express + MongoDB Atlas
 ```

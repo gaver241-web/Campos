@@ -6,9 +6,10 @@ const { MongoClient } = require("mongodb");
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-// MongoDB LOCAL en el servidor (aaPanel). Ajusta usuario/clave si tu Mongo tiene auth.
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017";
-const DB_NAME = process.env.DB_NAME || "campos_db";
+// MongoDB Atlas (nube) - cluster propio de "campos", independiente del de gaveclean.
+// Recomendado: usar variables de entorno (.env) en el servidor en vez de dejar la clave aquí.
+const MONGO_URL = process.env.MONGO_URL || "mongodb+srv://Camposnuevo:ARBSyuYc8i7o5v2W@campos1.liw1gja.mongodb.net/?retryWrites=true&w=majority&appName=Campos1";
+const DB_NAME = process.env.DB_NAME || "campos";
 
 let db;
 
