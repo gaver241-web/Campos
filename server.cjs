@@ -7,21 +7,40 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 // MongoDB Atlas (nube) - cluster propio de "campos", independiente del de gaveclean.
-// Recomendado: usar variables de entorno (.env) en el servidor en vez de dejar la clave aquí.
-const MONGO_URL = process.env.MONGO_URL || "mongodb+srv://Camposnuevo:ARBSyuYc8i7o5v2W@campos1.liw1gja.mongodb.net/?retryWrites=true&w=majority&appName=Campos1";
+// La cadena de conexión va SOLO en variables de entorno (Hostinger → Variables de entorno).
+const MONGO_URL = process.env.MONGO_URL;
 const DB_NAME = process.env.DB_NAME || "campos";
 
 let db;
+let client;
 
-async function connectDB() {
-  const client = new MongoClient(MONGO_URL);
-  await client.connect();
-  db = client.db(DB_NAME);
-  console.log(`✅ Conectado a MongoDB local (${DB_NAME})`);
+// Conecta a Atlas en segundo plano y reintenta si falla.
+// El servidor ya está escuchando, así que Hostinger no lo marca como caído.
+async function connectDB(intento = 1) {
+  if (!MONGO_URL) {
+    console.error("❌ Falta la variable de entorno MONGO_URL. Agrégala en Hostinger y reinicia la app.");
+    return;
+  }
+  try {
+    if (client) await client.close().catch(() => {});
+    client = new MongoClient(MONGO_URL, { serverSelectionTimeoutMS: 10000 });
+    await client.connect();
+    db = client.db(DB_NAME);
+    console.log(`✅ Conectado a MongoDB Atlas (${DB_NAME})`);
+  } catch (err) {
+    console.error(`❌ Error conectando a MongoDB (intento ${intento}):`, err.message);
+    setTimeout(() => connectDB(intento + 1), Math.min(30000, 5000 * intento));
+  }
 }
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+
+// Si la base de datos aún no conectó, la API responde 503 en vez de romperse.
+app.use("/api", (req, res, next) => {
+  if (!db) return res.status(503).json({ error: "Base de datos no disponible, intenta en unos segundos" });
+  next();
+});
 app.use(express.static(path.join(__dirname, "dist")));
 
 function clean(doc) {
@@ -141,11 +160,8 @@ app.get("/{*splat}", (req, res) => {
 });
 
 // ── INICIAR ──────────────────────────────────────────────────
-connectDB().then(() => {
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`✅ Campos corriendo en puerto ${PORT}`);
-  });
-}).catch(err => {
-  console.error("❌ Error conectando a MongoDB:", err);
-  process.exit(1);
+// Primero escucha el puerto (Hostinger lo exige en menos de 3 s) y luego conecta a la base.
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Campos corriendo en puerto ${PORT}`);
 });
+connectDB();
