@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader titulo="Venta de Agua y Gas" subtitulo="Resumen del día" ahora={ahora} />
+      <PageHeader titulo="Venta de Agua y Gas" subtitulo="Resumen del día" ahora={ahora} portada />
 
       <div className="page-content overlap">
         <div className="metric-grid tres">

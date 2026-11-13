@@ -18,8 +18,8 @@ export default function AguaGasLayout() {
     <div className="app-shell">
       <nav className="nav" aria-label="Navegación principal">
         <div className="sidebar-brand">
-          <strong>Campos</strong>
-          <span>Agua y Gas</span>
+          <img src="/logo-campos.webp" alt="Campos Gas" />
+          <span>Venta de Agua y Gas</span>
         </div>
 
         <div className="nav-list">

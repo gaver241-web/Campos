@@ -4,7 +4,10 @@ export default function Home() {
   const navigate = useNavigate()
   return (
     <div className="home-principal">
-      <h1>Campos</h1>
+      <h1 className="sr-only">Campos</h1>
+      <div className="logo-glow">
+        <img className="home-logo" src="/logo-campos.webp" alt="Campos Gas" />
+      </div>
       <p className="subtitle">Elige el sistema que deseas usar</p>
       <div className="home-options">
         <button className="home-option agua-gas" onClick={() => navigate('/agua-gas')}>
