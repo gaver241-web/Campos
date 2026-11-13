@@ -1,68 +1,56 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import Icon from './Icons.jsx'
 
 const NAV_ITEMS = [
-  { path: '', icon: '🏠', label: 'Inicio' },
-  { path: 'inventario', icon: '📦', label: 'Inventario' },
-  { path: 'ventas', icon: '🧾', label: 'Ventas' },
-  { path: 'balance', icon: '📊', label: 'Balance' },
+  { path: '', icon: 'home', label: 'Inicio' },
+  { path: 'inventario', icon: 'inventario', label: 'Inventario' },
+  { path: 'ventas', icon: 'ventas', label: 'Ventas' },
+  { path: 'balance', icon: 'balance', label: 'Balance' },
 ]
 
 export default function AguaGasLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const segments = location.pathname.split('/').filter(Boolean)
-  const current = segments.length <= 1 ? '' : segments[segments.length - 1]
+  const ultimo = location.pathname.split('/').pop()
+  const current = ultimo === 'agua-gas' ? '' : ultimo
 
   return (
     <div className="app-shell">
-      {/* Navegación lateral en Escritorio / Tablet grande */}
-      <aside className="sidebar-desktop">
+      <nav className="nav" aria-label="Navegación principal">
         <div className="sidebar-brand">
-          <h1>Campos</h1>
-          <span>💧 Agua y Gas</span>
+          <strong>Campos</strong>
+          <span>Agua y Gas</span>
         </div>
 
-        <nav className="sidebar-nav">
+        <div className="nav-list">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.label}
-              className={current === item.path ? 'active' : ''}
-              onClick={() => navigate(item.path ? `/agua-gas/${item.path}` : '/agua-gas')}
+              className={`nav-item${current === item.path ? ' active' : ''}`}
+              aria-current={current === item.path ? 'page' : undefined}
+              onClick={() => navigate(`/agua-gas/${item.path}`)}
             >
-              <span>{item.icon}</span>
+              <Icon name={item.icon} />
               <span>{item.label}</span>
             </button>
           ))}
-
-          <button className="sidebar-exit" onClick={() => navigate('/')}>
-            <span>🚪</span>
-            <span>Cambiar módulo</span>
+          <button className="nav-item salir" onClick={() => navigate('/')}>
+            <Icon name="salir" />
+            <span>Salir</span>
           </button>
-        </nav>
-      </aside>
+        </div>
 
-      {/* Contenido principal */}
-      <main className="main-area">
+        <div className="sidebar-footer">
+          <button className="nav-item" onClick={() => navigate('/')}>
+            <Icon name="salir" />
+            <span>Cambiar de sistema</span>
+          </button>
+        </div>
+      </nav>
+
+      <main className="app-main">
         <Outlet />
       </main>
-
-      {/* Navegación inferior en Celular */}
-      <nav className="bottom-nav">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.label}
-            className={current === item.path ? 'active' : ''}
-            onClick={() => navigate(item.path ? `/agua-gas/${item.path}` : '/agua-gas')}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-        <button onClick={() => navigate('/')}>
-          <span className="nav-icon">🚪</span>
-          <span>Salir</span>
-        </button>
-      </nav>
     </div>
   )
 }

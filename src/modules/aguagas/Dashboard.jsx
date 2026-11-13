@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { api } from './api.js'
+import PageHeader from './PageHeader.jsx'
 
 function hoyISO() {
-  const d = new Date()
-  const offset = d.getTimezoneOffset() * 60000
-  return new Date(d.getTime() - offset).toISOString().slice(0, 10)
+  return new Date().toISOString().slice(0, 10)
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
   const [productos, setProductos] = useState([])
   const [ventas, setVentas] = useState([])
   const [ahora, setAhora] = useState(new Date())
@@ -28,79 +25,66 @@ export default function Dashboard() {
   const stockAgua = productos.filter(p => p.categoria === 'agua').reduce((s, p) => s + (Number(p.stock) || 0), 0)
   const stockGas = productos.filter(p => p.categoria === 'gas').reduce((s, p) => s + (Number(p.stock) || 0), 0)
 
+  const ultimas = [...ventas]
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+    .slice(0, 5)
+
   return (
     <>
-      <header className="module-header">
-        <div className="top-row">
-          <div>
-            <h2>Venta de Agua y Gas</h2>
-            <p className="header-sub">Panel general del día</p>
-          </div>
-          <div className="datetime">
-            <div>{ahora.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-            <div>{ahora.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</div>
-          </div>
-        </div>
-      </header>
+      <PageHeader titulo="Venta de Agua y Gas" subtitulo="Resumen del día" ahora={ahora} />
 
-      <div className="page-body">
-        <div className="section-header">
-          <h3 className="section-title">Resumen de hoy</h3>
-        </div>
-        <div className="resumen-grid">
-          <div className="resumen-card highlight">
+      <div className="page-content overlap">
+        <div className="metric-grid tres">
+          <div className="metric destacada">
+            <div className="etiqueta">Ingresos de hoy</div>
             <div className="valor">S/ {totalIngresos.toFixed(2)}</div>
-            <div className="etiqueta">Ingresos</div>
           </div>
-          <div className="resumen-card">
-            <div className="valor">{ventasHoy.length}</div>
+          <div className="metric">
             <div className="etiqueta">Ventas</div>
+            <div className="valor">{ventasHoy.length}</div>
           </div>
-          <div className="resumen-card">
+          <div className="metric">
+            <div className="etiqueta">Productos vendidos</div>
             <div className="valor">{totalProductosVendidos}</div>
-            <div className="etiqueta">Unidades</div>
           </div>
         </div>
 
-        <div className="section-header">
-          <h3 className="section-title">Stock disponible</h3>
-        </div>
-        <div className="stock-grid">
-          <div className="stock-card agua">
-            <div className="stock-card-top">
-              <div className="emoji">💧</div>
-            </div>
-            <div>
-              <div className="titulo">Agua</div>
-              <div className="cantidad">{stockAgua}</div>
-              <div className="unidad">unidades en stock</div>
+        <div className="dash-columnas">
+          <div>
+            <div className="section-title">Stock disponible</div>
+            <div className="stock-grid">
+              <div className="stock-card agua">
+                <div className="emoji">💧</div>
+                <div className="titulo">Agua</div>
+                <div className="cantidad">{stockAgua}</div>
+                <div className="unidad">en inventario</div>
+              </div>
+              <div className="stock-card gas">
+                <div className="emoji">⛽</div>
+                <div className="titulo">Balón de gas</div>
+                <div className="cantidad">{stockGas}</div>
+                <div className="unidad">en inventario</div>
+              </div>
             </div>
           </div>
 
-          <div className="stock-card gas">
-            <div className="stock-card-top">
-              <div className="emoji">⛽</div>
-            </div>
-            <div>
-              <div className="titulo">Balón de Gas</div>
-              <div className="cantidad">{stockGas}</div>
-              <div className="unidad">balones en stock</div>
+          <div>
+            <div className="section-title">Últimas ventas</div>
+            <div className="card">
+              {ultimas.length === 0 && <p className="empty">Todavía no hay ventas. Registra la primera en la pestaña Ventas.</p>}
+              {ultimas.map(v => (
+                <div className="list-item" key={v.id}>
+                  <div className="info">
+                    <strong>{v.cliente}</strong>
+                    <div className="meta">{v.producto} x{v.cantidad}</div>
+                  </div>
+                  <div className="lado">
+                    <div className="monto">S/ {Number(v.montoPagado).toFixed(2)}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-
-        <div className="section-header">
-          <h3 className="section-title">Accesos rápidos</h3>
-        </div>
-        <div className="quick-actions">
-          <button className="quick-btn" onClick={() => navigate('/agua-gas/ventas')}>
-            <span>➕</span>
-            <span>Nueva venta</span>
-          </button>
-          <button className="quick-btn" onClick={() => navigate('/agua-gas/inventario')}>
-            <span>📦</span>
-            <span>Ver inventario</span>
-          </button>
         </div>
       </div>
     </>

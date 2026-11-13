@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from './api.js'
+import PageHeader from './PageHeader.jsx'
 
 function inRange(fechaISO, desde, hasta) {
   const f = new Date(fechaISO)
@@ -56,69 +57,75 @@ export default function Balance() {
     return s + ((Number(v.montoPagado) || 0) - costo)
   }, 0)
 
+  const pctCobrado = totalVendido > 0 ? Math.round((totalCobrado / totalVendido) * 100) : 0
+
   return (
     <>
-      <header className="module-header">
-        <div className="top-row">
-          <div>
-            <h2>Balance</h2>
-            <p className="header-sub">Resumen financiero y ganancias</p>
-          </div>
-        </div>
-      </header>
+      <PageHeader titulo="Balance" subtitulo="Ingresos, ganancia y cobros" compact />
 
-      <div className="tabs-bar">
-        {[['dia', 'Hoy'], ['semana', 'Semana'], ['mes', 'Mes'], ['anio', 'Año'], ['custom', 'Por fechas']].map(([key, label]) => (
-          <button key={key} className={filtro === key ? 'active' : ''} onClick={() => setFiltro(key)}>{label}</button>
-        ))}
+      <div className="filtros-wrap">
+        <div className="filtros-fecha">
+          {[['dia', 'Día'], ['semana', 'Semana'], ['mes', 'Mes'], ['anio', 'Año'], ['custom', 'Rango']].map(([key, label]) => (
+            <button key={key} className={filtro === key ? 'active' : ''} onClick={() => setFiltro(key)}>{label}</button>
+          ))}
+        </div>
       </div>
 
-      <div className="page-body">
+      <div className="page-content">
         {filtro === 'custom' && (
           <div className="card">
-            <div className="form-grid two-cols">
+            <div className="form-grid dos" style={{ marginBottom: 0 }}>
               <div className="form-row">
-                <label>Desde</label>
-                <input type="date" value={desde} onChange={e => setDesde(e.target.value)} />
+                <label htmlFor="b-desde">Desde</label>
+                <input id="b-desde" type="date" value={desde} onChange={e => setDesde(e.target.value)} />
               </div>
               <div className="form-row">
-                <label>Hasta</label>
-                <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
+                <label htmlFor="b-hasta">Hasta</label>
+                <input id="b-hasta" type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
               </div>
             </div>
           </div>
         )}
 
-        <div className="balance-grid">
-          <div className="balance-card">
+        <div className="metric-grid cuatro">
+          <div className="metric">
             <div className="etiqueta">Total vendido</div>
-            <div className="monto">S/ {totalVendido.toFixed(2)}</div>
+            <div className="valor">S/ {totalVendido.toFixed(2)}</div>
           </div>
-          <div className="balance-card">
+          <div className="metric">
             <div className="etiqueta">Ganancia estimada</div>
-            <div className="monto" style={{ color: 'var(--verde)' }}>S/ {gananciaEstimada.toFixed(2)}</div>
+            <div className="valor verde">S/ {gananciaEstimada.toFixed(2)}</div>
           </div>
-          <div className="balance-card">
+          <div className="metric">
             <div className="etiqueta">Cobrado ({cobradas.length})</div>
-            <div className="monto">S/ {totalCobrado.toFixed(2)}</div>
+            <div className="valor">S/ {totalCobrado.toFixed(2)}</div>
           </div>
-          <div className="balance-card">
+          <div className="metric">
             <div className="etiqueta">Por cobrar ({pendientes.length})</div>
-            <div className="monto" style={{ color: 'var(--rojo)' }}>S/ {totalPendiente.toFixed(2)}</div>
+            <div className="valor rojo">S/ {totalPendiente.toFixed(2)}</div>
           </div>
         </div>
 
+        <div className="section-title">Estado de cobros</div>
         <div className="card">
-          <div className="card-title">
-            <span>Detalle de actividad</span>
+          <div className="proporcion" role="img" aria-label={`${pctCobrado}% cobrado`}>
+            <span style={{ width: `${pctCobrado}%` }} />
+          </div>
+          <div className="leyenda">
+            <span>Cobrado {pctCobrado}%</span>
+            <span>Por cobrar {totalVendido > 0 ? 100 - pctCobrado : 0}%</span>
+          </div>
+        </div>
+
+        <div className="section-title">Detalle</div>
+        <div className="card">
+          <div className="list-item">
+            <strong>Productos vendidos</strong>
+            <span className="monto">{productosVendidos}</span>
           </div>
           <div className="list-item">
-            <span style={{ color: 'var(--gris-texto)', fontWeight: 600 }}>Productos vendidos</span>
-            <strong style={{ fontSize: 16 }}>{productosVendidos} unidades</strong>
-          </div>
-          <div className="list-item">
-            <span style={{ color: 'var(--gris-texto)', fontWeight: 600 }}>N° de operaciones</span>
-            <strong style={{ fontSize: 16 }}>{ventasFiltradas.length} ventas</strong>
+            <strong>N° de ventas</strong>
+            <span className="monto">{ventasFiltradas.length}</span>
           </div>
         </div>
       </div>
