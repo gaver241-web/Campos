@@ -60,59 +60,65 @@ export default function Balance() {
     <>
       <header className="module-header">
         <div className="top-row">
-          <h2>Balance</h2>
+          <div>
+            <h2>Balance</h2>
+            <p className="header-sub">Resumen financiero y ganancias</p>
+          </div>
         </div>
       </header>
 
-      <div className="filtros-fecha">
-        {[['dia', 'Día'], ['semana', 'Semana'], ['mes', 'Mes'], ['anio', 'Año'], ['custom', 'Rango']].map(([key, label]) => (
+      <div className="tabs-bar">
+        {[['dia', 'Hoy'], ['semana', 'Semana'], ['mes', 'Mes'], ['anio', 'Año'], ['custom', 'Por fechas']].map(([key, label]) => (
           <button key={key} className={filtro === key ? 'active' : ''} onClick={() => setFiltro(key)}>{label}</button>
         ))}
       </div>
 
-      {filtro === 'custom' && (
-        <div className="page-content" style={{ paddingTop: 0, paddingBottom: 8 }}>
-          <div className="card" style={{ display: 'flex', gap: 10 }}>
-            <div className="form-row" style={{ flex: 1, marginBottom: 0 }}>
-              <label>Desde</label>
-              <input type="date" value={desde} onChange={e => setDesde(e.target.value)} />
-            </div>
-            <div className="form-row" style={{ flex: 1, marginBottom: 0 }}>
-              <label>Hasta</label>
-              <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
+      <div className="page-body">
+        {filtro === 'custom' && (
+          <div className="card">
+            <div className="form-grid two-cols">
+              <div className="form-row">
+                <label>Desde</label>
+                <input type="date" value={desde} onChange={e => setDesde(e.target.value)} />
+              </div>
+              <div className="form-row">
+                <label>Hasta</label>
+                <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="page-content">
-        <div className="resumen-grid" style={{ padding: 0, gridTemplateColumns: '1fr 1fr' }}>
-          <div className="card">
-            <div className="etiqueta" style={{ fontSize: 12, color: '#6B8494' }}>Total vendido</div>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>S/ {totalVendido.toFixed(2)}</div>
+        <div className="balance-grid">
+          <div className="balance-card">
+            <div className="etiqueta">Total vendido</div>
+            <div className="monto">S/ {totalVendido.toFixed(2)}</div>
           </div>
-          <div className="card">
-            <div className="etiqueta" style={{ fontSize: 12, color: '#6B8494' }}>Ganancia estimada</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--verde)' }}>S/ {gananciaEstimada.toFixed(2)}</div>
+          <div className="balance-card">
+            <div className="etiqueta">Ganancia estimada</div>
+            <div className="monto" style={{ color: 'var(--verde)' }}>S/ {gananciaEstimada.toFixed(2)}</div>
           </div>
-          <div className="card">
-            <div className="etiqueta" style={{ fontSize: 12, color: '#6B8494' }}>Cobrado ({cobradas.length})</div>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>S/ {totalCobrado.toFixed(2)}</div>
+          <div className="balance-card">
+            <div className="etiqueta">Cobrado ({cobradas.length})</div>
+            <div className="monto">S/ {totalCobrado.toFixed(2)}</div>
           </div>
-          <div className="card">
-            <div className="etiqueta" style={{ fontSize: 12, color: '#6B8494' }}>Por cobrar ({pendientes.length})</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--rojo)' }}>S/ {totalPendiente.toFixed(2)}</div>
+          <div className="balance-card">
+            <div className="etiqueta">Por cobrar ({pendientes.length})</div>
+            <div className="monto" style={{ color: 'var(--rojo)' }}>S/ {totalPendiente.toFixed(2)}</div>
           </div>
         </div>
 
         <div className="card">
-          <div className="list-item">
-            <strong>Productos vendidos</strong>
-            <span style={{ fontWeight: 700 }}>{productosVendidos}</span>
+          <div className="card-title">
+            <span>Detalle de actividad</span>
           </div>
           <div className="list-item">
-            <strong>N° de ventas</strong>
-            <span style={{ fontWeight: 700 }}>{ventasFiltradas.length}</span>
+            <span style={{ color: 'var(--gris-texto)', fontWeight: 600 }}>Productos vendidos</span>
+            <strong style={{ fontSize: 16 }}>{productosVendidos} unidades</strong>
+          </div>
+          <div className="list-item">
+            <span style={{ color: 'var(--gris-texto)', fontWeight: 600 }}>N° de operaciones</span>
+            <strong style={{ fontSize: 16 }}>{ventasFiltradas.length} ventas</strong>
           </div>
         </div>
       </div>
