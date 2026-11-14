@@ -19,10 +19,12 @@ export default function Home() {
             </span>
           </button>
           <button className="home-option carwash" onClick={() => navigate('/carwash')}>
-            <span className="icon">🚗</span>
+            <span className="icon">
+              <img src="/logo-carwash.webp" alt="" />
+            </span>
             <span className="label">
-              <strong>Carwash</strong>
-              <span>Próximamente</span>
+              <strong>Carwash Campos</strong>
+              <span>Órdenes, caja y clientes</span>
             </span>
           </button>
         </div>
