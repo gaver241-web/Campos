@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Icon from './Icons.jsx'
+import { useSync } from './store.js'
 import './carwash.css'
 
 const NAV = [
@@ -17,6 +18,7 @@ export default function CarwashLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const current = location.pathname.split('/')[2] || ''
+  const sync = useSync()
   const enMas = current === 'mas' || NAV.some((n) => !n.movil && n.path === current)
 
   return (
@@ -54,6 +56,10 @@ export default function CarwashLayout() {
           </button>
         </div>
       </nav>
+
+      <div className={`cw-sync ${sync}`} role="status">
+        {{ cargando: 'Conectando…', ok: 'Guardado en la nube', pendiente: 'Guardando…', error: 'Sin conexión: se guardará al volver' }[sync]}
+      </div>
 
       <main className="cw-main">
         <Outlet />

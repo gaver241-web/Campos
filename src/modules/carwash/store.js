@@ -2,6 +2,10 @@ import { useSyncExternalStore } from 'react'
 import { PLANTILLAS_BASE, ejemplos, uid, hoy, horaAhora, normPlaca } from './data.js'
 
 const KEY = 'carwash-campos:v1'
+const PEND = 'carwash-campos:pendiente' // hay cambios locales que aún no llegaron a la base de datos
+const API = '/api/carwash'
+const COLS = ['servicios', 'combos', 'productos', 'clientes', 'ordenes', 'egresos', 'citas', 'maquinas', 'cierres']
+const META = ['caja', 'correlativo', 'config']
 
 const base = () => ({
   servicios: [],
@@ -45,39 +49,215 @@ function cargar() {
 }
 
 let estado = cargar()
-let avisado = false
 const subs = new Set()
 
-function guardar() {
-  const intentar = () => localStorage.setItem(KEY, JSON.stringify(estado))
+// ── Copia local (caché del navegador) ─────────────────────────
+// La base de datos es la fuente de verdad; esto solo permite abrir rápido y trabajar sin internet.
+let avisado = false
+function guardarLocal() {
   try {
-    intentar()
+    localStorage.setItem(KEY, JSON.stringify(estado))
   } catch (e) {
-    // Sin espacio: se quitan las fotos y firmas de los tickets más antiguos y se reintenta
+    // Sin espacio: en la copia local (no en la base de datos) se omiten fotos y firmas de tickets antiguos
     try {
-      const ord = [...estado.ordenes]
-      const limite = Math.max(0, ord.length - 8)
-      estado = {
-        ...estado,
-        ordenes: ord.map((o, i) => (i < limite ? { ...o, foto: null, fotosDanio: [], firma: null } : o)),
-      }
-      intentar()
-      if (!avisado) { avisado = true; alert('El espacio del navegador se está llenando. Se quitaron las fotos de tickets antiguos. Descarga un respaldo en Configuración.') }
+      const limite = Math.max(0, estado.ordenes.length - 8)
+      const liviano = { ...estado, ordenes: estado.ordenes.map((o, i) => (i < limite ? { ...o, foto: null, fotosDanio: [], firma: null } : o)) }
+      localStorage.setItem(KEY, JSON.stringify(liviano))
     } catch (e2) {
-      if (!avisado) { avisado = true; alert('No se pudo guardar: el navegador no tiene espacio. Descarga un respaldo en Configuración y libera espacio.') }
+      if (!avisado) { avisado = true; console.warn('Carwash: no hay espacio en el navegador para la copia local; los datos siguen yendo a la base de datos.') }
     }
   }
 }
 
+// ── Sincronización con MongoDB ────────────────────────────────
+let sincronizado = null // lo último que sabemos que está en la base de datos
+let cargado = false
+let enVuelo = false
+let revServidor = 0
+let timer = null
+let estadoSync = 'cargando' // cargando | ok | pendiente | error
+const subsSync = new Set()
+
+function setSync(s) {
+  if (estadoSync === s) return
+  estadoSync = s
+  subsSync.forEach((f) => f())
+}
+
+export function useSync() {
+  return useSyncExternalStore(
+    (cb) => { arrancar(); subsSync.add(cb); return () => subsSync.delete(cb) },
+    () => estadoSync
+  )
+}
+
+async function http(path, options) {
+  const res = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...options })
+  if (!res.ok) throw new Error('Error de red: ' + res.status)
+  return res.json()
+}
+
+// Compara dos estados (por referencia: los cambios son inmutables) y devuelve solo lo que cambió
+function diferencias(prev, next) {
+  const up = {}
+  const del = {}
+  const meta = {}
+  let hay = false
+  for (const c of COLS) {
+    const previos = new Map(prev[c].map((x) => [x.id, x]))
+    const ids = new Set()
+    for (const x of next[c]) {
+      ids.add(x.id)
+      if (previos.get(x.id) !== x) { (up[c] ||= []).push(x); hay = true }
+    }
+    for (const id of previos.keys()) if (!ids.has(id)) { (del[c] ||= []).push(id); hay = true }
+  }
+  for (const k of META) if (prev[k] !== next[k]) { meta[k] = next[k]; hay = true }
+  return { hay, up, del, meta }
+}
+
+async function enviar({ up, del, meta }) {
+  let rev = null
+  const hayDel = Object.keys(del).length > 0
+  const hayMeta = Object.keys(meta).length > 0
+  if (hayDel || hayMeta) rev = (await http('/sync', { method: 'POST', body: JSON.stringify({ del, meta }) })).rev
+  // Los tickets con fotos pesan: se mandan en tandas para no pasar el límite del servidor
+  let tanda = {}
+  let peso = 0
+  const mandar = async () => {
+    if (!Object.keys(tanda).length) return
+    rev = (await http('/sync', { method: 'POST', body: JSON.stringify({ up: tanda }) })).rev
+    tanda = {}
+    peso = 0
+  }
+  for (const c of Object.keys(up)) {
+    for (const item of up[c]) {
+      const t = JSON.stringify(item).length
+      if (peso + t > 4_000_000) await mandar()
+      ;(tanda[c] ||= []).push(item)
+      peso += t
+    }
+  }
+  await mandar()
+  return rev
+}
+
+function programar(ms) {
+  clearTimeout(timer)
+  timer = setTimeout(vaciarCola, ms)
+}
+
+async function vaciarCola() {
+  if (!cargado || enVuelo) return
+  const snap = estado
+  const d = diferencias(sincronizado, snap)
+  if (!d.hay) {
+    if (snap === estado) { localStorage.removeItem(PEND); setSync('ok') }
+    return
+  }
+  enVuelo = true
+  try {
+    const rev = await enviar(d)
+    sincronizado = snap
+    if (rev != null && rev === revServidor + 1) revServidor = rev // el cambio fue solo nuestro
+    if (estado === snap) { localStorage.removeItem(PEND); setSync('ok') }
+  } catch (e) {
+    setSync('error')
+    programar(8000)
+    enVuelo = false
+    return
+  }
+  enVuelo = false
+  if (estado !== snap) programar(0) // hubo cambios mientras se enviaba
+}
+
+// Une lo del servidor con cambios locales que quedaron sin enviar (gana lo local)
+function mezclar(srv, loc) {
+  const out = { ...srv }
+  for (const c of COLS) {
+    const m = new Map(srv[c].map((x) => [x.id, x]))
+    for (const x of loc[c]) m.set(x.id, x)
+    out[c] = [...m.values()]
+  }
+  out.caja = loc.caja
+  out.config = loc.config
+  out.correlativo = Math.max(srv.correlativo, loc.correlativo)
+  return out
+}
+
+function avisarCambio() {
+  guardarLocal()
+  subs.forEach((f) => f())
+}
+
+async function iniciar() {
+  try {
+    const srv = await http('/estado')
+    const delServidor = fusionar({ ...srv.cols, ...srv.meta })
+    revServidor = srv.rev || 0
+    if (srv.vacio) {
+      // Primera vez: lo que ya hay en este navegador se sube a la base de datos
+      sincronizado = base()
+    } else if (localStorage.getItem(PEND) === '1') {
+      sincronizado = delServidor
+      estado = mezclar(delServidor, estado)
+    } else {
+      sincronizado = delServidor
+      estado = delServidor
+    }
+    cargado = true
+    avisarCambio()
+    await vaciarCola()
+  } catch (e) {
+    setSync('error')
+    setTimeout(iniciar, 8000)
+  }
+}
+
+// Trae los cambios que hicieron otros equipos (solo si no hay nada pendiente de enviar aquí)
+async function refrescar() {
+  if (!cargado || enVuelo || localStorage.getItem(PEND) === '1') return
+  if (typeof document !== 'undefined' && document.hidden) return
+  const antes = estado
+  try {
+    const srv = await http('/estado?rev=' + revServidor)
+    if (srv.igual) { if (estadoSync === 'error') setSync('ok'); return }
+    if (estado !== antes || enVuelo || localStorage.getItem(PEND) === '1') return
+    const nuevo = fusionar({ ...srv.cols, ...srv.meta })
+    revServidor = srv.rev || 0
+    sincronizado = nuevo
+    estado = nuevo
+    avisarCambio()
+    setSync('ok')
+  } catch (e) { /* sin conexión: se reintenta en el siguiente ciclo */ }
+}
+
+// Arranca la sincronización solo cuando el panel la usa (la página pública de seguimiento no debe bajar los datos)
+let arrancado = false
+function arrancar() {
+  if (arrancado || typeof window === 'undefined') return
+  arrancado = true
+  iniciar()
+  setInterval(refrescar, 30000)
+  window.addEventListener('focus', refrescar)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) vaciarCola()
+    else refrescar()
+  })
+  window.addEventListener('online', () => { vaciarCola(); refrescar() })
+}
+
 function cambiar(fn) {
   estado = fn(estado)
-  guardar()
-  subs.forEach((f) => f())
+  try { localStorage.setItem(PEND, '1') } catch (e) { /* sin espacio local: igual se sincroniza */ }
+  avisarCambio()
+  setSync(cargado ? 'pendiente' : 'cargando')
+  if (cargado) programar(400)
 }
 
 export function useStore() {
   return useSyncExternalStore(
-    (cb) => { subs.add(cb); return () => subs.delete(cb) },
+    (cb) => { arrancar(); subs.add(cb); return () => subs.delete(cb) },
     () => estado
   )
 }

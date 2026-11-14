@@ -36,6 +36,11 @@ node server.cjs       # sirve /dist + API en un solo puerto
 src/
   pages/Home.jsx            → selector Agua-Gas / Carwash
   modules/aguagas/           → Dashboard, Inventario, Ventas, Balance
-  modules/carwash/           → placeholder (siguiente etapa)
+  modules/carwash/           → Órdenes, caja, clientes (guarda en MongoDB vía /api/carwash)
 server.cjs                  → API Express + MongoDB Atlas
 ```
+
+## Carwash y la base de datos
+El módulo Carwash guarda en MongoDB (colecciones `carwash_*` + `carwash_meta`) a través de `/api/carwash/*`.
+Mantiene una copia en el navegador para abrir rápido y trabajar sin internet; al volver la conexión sincroniza solo.
+La primera vez que se abre con la base vacía, sube lo que ya tenía guardado en ese navegador.

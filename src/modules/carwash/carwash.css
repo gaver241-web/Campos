@@ -480,3 +480,13 @@
   .cw-extra-form { grid-template-columns: 1fr 80px; }
   .cw-extra-form .cw-btn { grid-column: 1 / -1; }
 }
+
+
+/* Estado de sincronización con la base de datos */
+.cw-sync {
+  position: fixed; top: 8px; right: 10px; z-index: 50;
+  font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 99px;
+  background: #E8F7EC; color: #17703A; pointer-events: none;
+}
+.cw-sync.pendiente, .cw-sync.cargando { background: var(--cw-oro-suave); color: #7A5A00; }
+.cw-sync.error { background: #FDE8E8; color: #A11D1D; }

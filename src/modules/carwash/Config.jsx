@@ -68,8 +68,8 @@ export default function Config() {
         <div className="cw-card">
           <h3>Mis datos</h3>
           <p className="cw-nota">
-            Tienes {servicios.length} servicios, {clientes.length} clientes y {ordenes.length} tickets guardados en este navegador ({acc.tamanoKB()} KB de unos 5000 KB disponibles).
-            Los datos viven solo en este equipo: haz un respaldo seguido y no borres los datos del navegador.
+            Tienes {servicios.length} servicios, {clientes.length} clientes y {ordenes.length} tickets guardados en la base de datos ({acc.tamanoKB()} KB).
+            Se sincronizan solos entre tus equipos. Aun así, descarga un respaldo de vez en cuando.
           </p>
           <div className="cw-btn-fila cw-btn-envolver">
             <button className="cw-btn ghost" onClick={respaldo}>Descargar respaldo</button>
