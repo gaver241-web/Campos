@@ -5,6 +5,7 @@ async function req(path, options) {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
+  if (res.status === 401) window.dispatchEvent(new Event('auth-expirada'))
   if (!res.ok) throw new Error('Error de red: ' + res.status)
   return res.json()
 }

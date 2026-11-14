@@ -922,3 +922,47 @@ input, select {
   .home-option .icon { width: 88px; height: 88px; }
   .home-option.agua-gas .icon { padding: 8px; }
 }
+
+
+/* ── Login ── */
+.login-pagina {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: var(--azul-oscuro);
+}
+.login-caja {
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 28px 24px;
+  background: var(--blanco); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.login-logo { display: block; width: 190px; max-width: 70%; margin: 0 auto 4px; }
+.login-caja h1 { font-size: 22px; text-align: center; }
+.login-caja label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--gris-texto); }
+.login-caja input {
+  width: 100%; padding: 12px 14px; font: inherit; font-size: 16px;
+  border: 1px solid var(--gris-linea); border-radius: var(--radius-sm);
+  background: var(--gris-claro); color: var(--azul-oscuro);
+}
+.login-caja input:focus { outline: 2px solid var(--azul-celeste); background: var(--blanco); }
+.login-clave { position: relative; }
+.login-clave input { padding-right: 76px; }
+.login-ver {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  border: 0; background: none; color: var(--azul-celeste-oscuro);
+  font: inherit; font-size: 13px; font-weight: 700; padding: 8px 10px; cursor: pointer;
+}
+.login-error { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--rojo-suave); color: var(--rojo); font-size: 14px; font-weight: 600; }
+.login-entrar {
+  padding: 13px; border: 0; border-radius: var(--radius-sm);
+  background: var(--azul-celeste); color: var(--blanco);
+  font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.login-entrar:disabled { opacity: .6; cursor: default; }
+.login-cargando { color: #7FA3B8; }
+.home-salir {
+  border: 0; background: none; color: #7FA3B8; font: inherit; font-size: 13px;
+  text-decoration: underline; cursor: pointer; padding: 4px 8px; margin-bottom: 6px;
+}

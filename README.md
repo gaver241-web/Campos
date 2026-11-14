@@ -44,3 +44,9 @@ server.cjs                  → API Express + MongoDB Atlas
 El módulo Carwash guarda en MongoDB (colecciones `carwash_*` + `carwash_meta`) a través de `/api/carwash/*`.
 Mantiene una copia en el navegador para abrir rápido y trabajar sin internet; al volver la conexión sincroniza solo.
 La primera vez que se abre con la base vacía, sube lo que ya tenía guardado en ese navegador.
+
+## Login
+Todo el sistema (Agua y Gas + Carwash) pide iniciar sesión; la validación se hace en el servidor (cookie firmada, 30 días).
+Solo la página pública de seguimiento (`/#/carwash/estado/:placa`) queda abierta para los clientes.
+La clave no está en el código (solo su hash). Para cambiarla, en Hostinger define las variables:
+`ADMIN_PASSWORD` (nueva clave), y opcionalmente `ADMIN_EMAIL` y `SESSION_SECRET`; luego reinicia la app.
