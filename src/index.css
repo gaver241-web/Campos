@@ -966,3 +966,7 @@ input, select {
   border: 0; background: none; color: #7FA3B8; font: inherit; font-size: 13px;
   text-decoration: underline; cursor: pointer; padding: 4px 8px; margin-bottom: 6px;
 }
+
+.login-sub { margin-top: -10px; text-align: center; font-size: 14px; color: var(--gris-texto); }
+.login-volver { text-align: center; font-size: 13px; font-weight: 600; color: var(--gris-texto); text-decoration: none; }
+.login-volver:hover { text-decoration: underline; }

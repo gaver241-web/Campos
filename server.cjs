@@ -41,75 +41,100 @@ async function connectDB(intento = 1) {
 app.use(cors());
 app.use(express.json({ limit: "25mb" }));
 
-// ── LOGIN (una sola cuenta para todo el sistema) ────────────
-// La clave NO está en el código: aquí solo va su "hash". Para cambiarla sin tocar código,
-// define en Hostinger la variable ADMIN_PASSWORD (y opcionalmente ADMIN_EMAIL / SESSION_SECRET).
+// ── LOGIN (cada sistema tiene su propio acceso) ─────────────
+// Las claves NO están en el código: solo su "hash". Para cambiarlas sin tocar código, define en Hostinger
+// ADMIN_PASSWORD y/o EMPLEADO_PASSWORD (opcional: ADMIN_EMAIL, SESSION_SECRET) y reinicia la app.
+//  - Administrador: entra a Agua y Gas y a Carwash (todo).
+//  - EMPLEADO1: solo Carwash, y solo Inicio, Nuevo ticket, Caja y Clientes.
 app.set("trust proxy", 1);
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "pierre39campos@gmail.com").trim().toLowerCase();
-const ADMIN_HASH = "scrypt$4e39b1ee00d91692db7c1fcf7e048d3c$672f3cda39d61cb4f7b2b3e252ca32f24de9b58884917d9ae89bb5485340ca0f";
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash("sha256").update((MONGO_URL || "") + ADMIN_HASH + (process.env.ADMIN_PASSWORD || "")).digest("hex");
-const COOKIE = "campos_sesion";
+const USUARIOS = [
+  {
+    id: "admin", nombre: "Administrador", rol: "admin", apps: ["aguagas", "carwash"],
+    nombres: [ADMIN_EMAIL], envClave: "ADMIN_PASSWORD",
+    hash: "scrypt$4e39b1ee00d91692db7c1fcf7e048d3c$672f3cda39d61cb4f7b2b3e252ca32f24de9b58884917d9ae89bb5485340ca0f",
+  },
+  {
+    id: "empleado1", nombre: "EMPLEADO1", rol: "empleado", apps: ["carwash"],
+    nombres: ["empleado1"], envClave: "EMPLEADO_PASSWORD",
+    hash: "scrypt$46e862c9ba22780204256b6fa6125208$3d163189f55cdf5cb3bb031dde6f557ff57dba30bbf7ac45a398fb486da2879e",
+  },
+];
+const APPS = ["aguagas", "carwash"];
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash("sha256")
+  .update((MONGO_URL || "") + USUARIOS.map((u) => u.hash + (process.env[u.envClave] || "")).join("|")).digest("hex");
 const SESION_MS = 30 * 24 * 60 * 60 * 1000;
+const cookieDe = (appId) => "campos_" + appId;
 
 const igual = (a, b) => {
   const x = crypto.createHash("sha256").update(String(a)).digest();
   const y = crypto.createHash("sha256").update(String(b)).digest();
   return crypto.timingSafeEqual(x, y);
 };
-function claveCorrecta(pw) {
-  if (process.env.ADMIN_PASSWORD) return igual(pw, process.env.ADMIN_PASSWORD);
-  const [, salt, hash] = ADMIN_HASH.split("$");
+function claveCorrecta(u, pw) {
+  if (process.env[u.envClave]) return igual(pw, process.env[u.envClave]);
+  const [, salt, hash] = u.hash.split("$");
   return igual(crypto.scryptSync(String(pw), salt, 32).toString("hex"), hash);
 }
 const firmar = (txt) => crypto.createHmac("sha256", SESSION_SECRET).update(txt).digest("base64url");
-function crearToken(email) {
-  const cuerpo = Buffer.from(JSON.stringify({ e: email, exp: Date.now() + SESION_MS })).toString("base64url");
+function crearToken(u, appId) {
+  const cuerpo = Buffer.from(JSON.stringify({ id: u.id, rol: u.rol, nombre: u.nombre, app: appId, exp: Date.now() + SESION_MS })).toString("base64url");
   return cuerpo + "." + firmar(cuerpo);
 }
-function sesion(req) {
-  const m = (req.headers.cookie || "").split(";").map((c) => c.trim()).find((c) => c.startsWith(COOKIE + "="));
+// Devuelve la sesión válida para ese sistema (o null)
+function sesion(req, appId) {
+  const nombre = cookieDe(appId);
+  const m = (req.headers.cookie || "").split(";").map((c) => c.trim()).find((c) => c.startsWith(nombre + "="));
   if (!m) return null;
-  const [cuerpo, firma] = decodeURIComponent(m.slice(COOKIE.length + 1)).split(".");
+  const [cuerpo, firma] = decodeURIComponent(m.slice(nombre.length + 1)).split(".");
   if (!cuerpo || !firma || !igual(firma, firmar(cuerpo))) return null;
   try {
     const d = JSON.parse(Buffer.from(cuerpo, "base64url").toString());
-    return d.exp > Date.now() ? d : null;
+    const u = USUARIOS.find((x) => x.id === d.id);
+    return d.exp > Date.now() && d.app === appId && u && u.apps.includes(appId) ? d : null;
   } catch { return null; }
 }
 
 // Freno a quien prueba claves: 8 fallos seguidos desde una IP = bloqueo de 15 minutos
 const intentos = new Map();
 app.post("/api/login", (req, res) => {
+  const { app: appId, usuario = "", password = "" } = req.body || {};
+  if (!APPS.includes(appId)) return res.status(400).json({ error: "Sistema no válido" });
   const ip = req.ip;
   const reg = intentos.get(ip) || { n: 0, hasta: 0 };
   if (reg.hasta > Date.now()) return res.status(429).json({ error: "Demasiados intentos. Espera 15 minutos." });
-  const { email = "", password = "" } = req.body || {};
-  const ok = igual(String(email).trim().toLowerCase(), ADMIN_EMAIL) & claveCorrecta(password); // sin cortocircuito
-  if (!ok) {
+  const quien = String(usuario).trim().toLowerCase();
+  const u = USUARIOS.find((x) => x.nombres.includes(quien));
+  const claveOk = claveCorrecta(u || USUARIOS[0], password); // siempre se calcula, exista o no el usuario
+  if (!u || !claveOk || !u.apps.includes(appId)) {
     reg.n += 1;
     if (reg.n >= 8) { reg.n = 0; reg.hasta = Date.now() + 15 * 60 * 1000; }
     intentos.set(ip, reg);
-    return res.status(401).json({ error: "Correo o contraseña incorrectos" });
+    return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
   }
   intentos.delete(ip);
-  res.cookie(COOKIE, crearToken(ADMIN_EMAIL), { httpOnly: true, sameSite: "lax", secure: req.secure, maxAge: SESION_MS, path: "/" });
-  res.json({ ok: true });
+  res.cookie(cookieDe(appId), crearToken(u, appId), { httpOnly: true, sameSite: "lax", secure: req.secure, maxAge: SESION_MS, path: "/" });
+  res.json({ ok: true, rol: u.rol, nombre: u.nombre });
 });
 app.get("/api/me", (req, res) => {
-  const s = sesion(req);
+  const s = APPS.includes(req.query.app) ? sesion(req, req.query.app) : null;
   if (!s) return res.status(401).json({ error: "No autorizado" });
-  res.json({ ok: true, email: s.e });
+  res.json({ ok: true, rol: s.rol, nombre: s.nombre });
 });
 app.post("/api/logout", (req, res) => {
-  res.clearCookie(COOKIE, { path: "/" });
+  const appId = (req.body || {}).app;
+  if (APPS.includes(appId)) res.clearCookie(cookieDe(appId), { path: "/" });
   res.json({ ok: true });
 });
 
-// Todo lo demás de la API exige sesión (menos el seguimiento público que abre el cliente desde su celular)
+// Cada parte de la API exige la sesión de SU sistema (menos el seguimiento público que abre el cliente desde su celular)
 app.use("/api", (req, res, next) => {
   if (req.path.startsWith("/carwash/seguimiento/")) return next();
-  if (sesion(req)) return next();
-  res.status(401).json({ error: "No autorizado" });
+  const appId = req.path.startsWith("/aguagas") ? "aguagas" : req.path.startsWith("/carwash") ? "carwash" : null;
+  const s = appId && sesion(req, appId);
+  if (!s) return res.status(401).json({ error: "No autorizado" });
+  req.usuario = s;
+  next();
 });
 
 // Si la base de datos aún no conectó, la API responde 503 en vez de romperse.
@@ -256,6 +281,11 @@ app.get("/api/carwash/estado", async (req, res) => {
 app.post("/api/carwash/sync", async (req, res) => {
   try {
     const { up = {}, del = {}, meta = {} } = req.body || {};
+    if (req.usuario && req.usuario.rol === "empleado") {
+      // El empleado no puede cambiar precios/servicios, citas ni la configuración del negocio
+      for (const c of ["servicios", "combos", "citas"]) { delete up[c]; delete del[c]; }
+      delete meta.config;
+    }
     for (const c of [...Object.keys(up), ...Object.keys(del)]) {
       if (!CW_COLS.includes(c)) return res.status(400).json({ error: "Colección no válida: " + c });
     }

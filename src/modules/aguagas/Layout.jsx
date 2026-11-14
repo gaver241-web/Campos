@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Icon from './Icons.jsx'
+import { cerrarSesion } from '../../auth.jsx'
 
 const NAV_ITEMS = [
   { path: '', icon: 'home', label: 'Inicio' },
@@ -34,7 +35,7 @@ export default function AguaGasLayout() {
               <span>{item.label}</span>
             </button>
           ))}
-          <button className="nav-item salir" onClick={() => navigate('/')}>
+          <button className="nav-item salir" onClick={() => cerrarSesion('aguagas')}>
             <Icon name="salir" />
             <span>Salir</span>
           </button>
@@ -44,6 +45,10 @@ export default function AguaGasLayout() {
           <button className="nav-item" onClick={() => navigate('/')}>
             <Icon name="salir" />
             <span>Cambiar de sistema</span>
+          </button>
+          <button className="nav-item" onClick={() => cerrarSesion('aguagas')}>
+            <Icon name="salir" />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </nav>

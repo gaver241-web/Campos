@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { cerrarSesion } from '../auth.jsx'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -32,8 +31,6 @@ export default function Home() {
       </div>
 
       <footer className="home-footer">
-        <button className="home-salir" onClick={cerrarSesion}>Cerrar sesión</button>
-        <br />
         Diseñado por{' '}
         <a href="https://gaverstudio.com/" target="_blank" rel="noopener noreferrer">
           Gaver Studio

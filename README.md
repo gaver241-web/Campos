@@ -46,7 +46,9 @@ Mantiene una copia en el navegador para abrir rápido y trabajar sin internet; a
 La primera vez que se abre con la base vacía, sube lo que ya tenía guardado en ese navegador.
 
 ## Login
-Todo el sistema (Agua y Gas + Carwash) pide iniciar sesión; la validación se hace en el servidor (cookie firmada, 30 días).
-Solo la página pública de seguimiento (`/#/carwash/estado/:placa`) queda abierta para los clientes.
-La clave no está en el código (solo su hash). Para cambiarla, en Hostinger define las variables:
-`ADMIN_PASSWORD` (nueva clave), y opcionalmente `ADMIN_EMAIL` y `SESSION_SECRET`; luego reinicia la app.
+La pantalla de inicio (elegir Agua y Gas / Carwash) es pública. **Cada sistema tiene su propio login**, validado en el servidor (cookie firmada, 30 días):
+- **Administrador** (`pierre39campos@gmail.com`): entra a Agua y Gas y a Carwash, con todo.
+- **EMPLEADO1**: solo Carwash, y solo Inicio, Nuevo ticket, Caja y Clientes (el servidor además ignora cualquier cambio suyo a servicios, precios, citas o configuración).
+La página pública de seguimiento (`/#/carwash/estado/:placa`) queda abierta para los clientes.
+Las claves no están en el código (solo su hash). Para cambiarlas, en Hostinger define `ADMIN_PASSWORD` y/o `EMPLEADO_PASSWORD`
+(opcional: `ADMIN_EMAIL`, `SESSION_SECRET`) y reinicia la app.

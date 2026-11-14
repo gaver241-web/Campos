@@ -1,6 +1,7 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import Icon from './Icons.jsx'
 import { useSync } from './store.js'
+import { useAuth, cerrarSesion } from '../../auth.jsx'
 import './carwash.css'
 
 const NAV = [
@@ -14,12 +15,20 @@ const NAV = [
   { path: 'config', icon: 'config', label: 'Configuración', movil: false },
 ]
 
+// El EMPLEADO solo puede entrar a estas pantallas
+const PERMITIDAS_EMPLEADO = ['', 'orden', 'caja', 'clientes']
+
 export default function CarwashLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const current = location.pathname.split('/')[2] || ''
   const sync = useSync()
-  const enMas = current === 'mas' || NAV.some((n) => !n.movil && n.path === current)
+  const { rol } = useAuth()
+  const esEmpleado = rol === 'empleado'
+  const menu = esEmpleado ? NAV.filter((n) => PERMITIDAS_EMPLEADO.includes(n.path)) : NAV
+  const enMas = !esEmpleado && (current === 'mas' || NAV.some((n) => !n.movil && n.path === current))
+
+  if (esEmpleado && !PERMITIDAS_EMPLEADO.includes(current)) return <Navigate to="/carwash" replace />
 
   return (
     <div className="cw-shell">
@@ -29,7 +38,7 @@ export default function CarwashLayout() {
         </div>
 
         <div className="cw-nav-list">
-          {NAV.map((item) => (
+          {menu.map((item) => (
             <button
               key={item.label}
               className={`cw-nav-item${item.movil ? '' : ' solo-escritorio'}${current === item.path ? ' active' : ''}`}
@@ -40,19 +49,30 @@ export default function CarwashLayout() {
               <span>{item.label}</span>
             </button>
           ))}
-          <button
-            className={`cw-nav-item solo-movil${enMas ? ' active' : ''}`}
-            onClick={() => navigate('/carwash/mas')}
-          >
-            <Icon name="mas" />
-            <span>Más</span>
-          </button>
+          {esEmpleado ? (
+            <button className="cw-nav-item solo-movil" onClick={() => cerrarSesion('carwash')}>
+              <Icon name="salir" />
+              <span>Salir</span>
+            </button>
+          ) : (
+            <button
+              className={`cw-nav-item solo-movil${enMas ? ' active' : ''}`}
+              onClick={() => navigate('/carwash/mas')}
+            >
+              <Icon name="mas" />
+              <span>Más</span>
+            </button>
+          )}
         </div>
 
         <div className="cw-nav-footer">
           <button className="cw-nav-item" onClick={() => navigate('/')}>
             <Icon name="salir" />
             <span>Cambiar de sistema</span>
+          </button>
+          <button className="cw-nav-item" onClick={() => cerrarSesion('carwash')}>
+            <Icon name="salir" />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </nav>

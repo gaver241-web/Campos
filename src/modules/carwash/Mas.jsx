@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Cabecera from './Cabecera.jsx'
 import Icon from './Icons.jsx'
+import { cerrarSesion } from '../../auth.jsx'
 
 const ITEMS = [
   ['servicios', 'servicios', 'Servicios y tarifas', 'Precios, combos e inventario'],
@@ -26,6 +27,10 @@ export default function Mas() {
           <button className="cw-fila plano boton" onClick={() => navigate('/')}>
             <span className="cw-ico"><Icon name="salir" /></span>
             <div className="info"><strong>Cambiar de sistema</strong></div>
+          </button>
+          <button className="cw-fila plano boton" onClick={() => cerrarSesion('carwash')}>
+            <span className="cw-ico"><Icon name="salir" /></span>
+            <div className="info"><strong>Cerrar sesión</strong></div>
           </button>
         </div>
       </div>

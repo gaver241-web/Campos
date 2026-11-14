@@ -23,14 +23,16 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route path="/carwash/estado/:placa" element={<CwSeguimiento />} />
-        <Route element={<RequireAuth />}>
-          <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route element={<RequireAuth app="aguagas" />}>
           <Route path="/agua-gas" element={<AguaGasLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="inventario" element={<Inventario />} />
             <Route path="ventas" element={<Ventas />} />
             <Route path="balance" element={<Balance />} />
           </Route>
+        </Route>
+        <Route element={<RequireAuth app="carwash" />}>
           <Route path="/carwash" element={<CarwashLayout />}>
             <Route index element={<CwDashboard />} />
             <Route path="orden" element={<CwNuevaOrden />} />

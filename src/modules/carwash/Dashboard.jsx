@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth.jsx'
 import Cabecera from './Cabecera.jsx'
 import { useStore, acc, totalOrden } from './store.js'
 import { soles, hoy, sumarDias, catEmoji, catNombre } from './data.js'
@@ -12,6 +13,7 @@ const COLUMNAS = [
 const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 export default function Dashboard() {
+  const { rol } = useAuth()
   const navigate = useNavigate()
   const { ordenes, productos, maquinas } = useStore()
   const [tab, setTab] = useState('espera')
@@ -58,9 +60,9 @@ export default function Dashboard() {
         {ordenes.length === 0 && (
           <div className="cw-card centro">
             <p><b>¡Bienvenido!</b> Aún no hay tickets.</p>
-            <p className="cw-nota">Primero crea tus servicios y precios, luego registra tu primer ticket.</p>
+            <p className="cw-nota">{rol === 'empleado' ? 'Registra el primer ticket del día.' : 'Primero crea tus servicios y precios, luego registra tu primer ticket.'}</p>
             <div className="cw-btn-fila" style={{ width: '100%' }}>
-              <button className="cw-btn ghost" onClick={() => navigate('/carwash/servicios')}>Crear servicios</button>
+              {rol !== 'empleado' && <button className="cw-btn ghost" onClick={() => navigate('/carwash/servicios')}>Crear servicios</button>}
               <button className="cw-btn" onClick={() => navigate('/carwash/orden')}>Nuevo ticket</button>
             </div>
           </div>
