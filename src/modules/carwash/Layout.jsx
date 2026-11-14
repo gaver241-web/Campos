@@ -4,7 +4,7 @@ import './carwash.css'
 
 const NAV = [
   { path: '', icon: 'home', label: 'Inicio', movil: true },
-  { path: 'orden', icon: 'orden', label: 'Nueva orden', movil: true },
+  { path: 'orden', icon: 'orden', label: 'Nuevo ticket', movil: true },
   { path: 'caja', icon: 'caja', label: 'Caja', movil: true },
   { path: 'clientes', icon: 'clientes', label: 'Clientes', movil: true },
   { path: 'servicios', icon: 'servicios', label: 'Servicios', movil: false },
@@ -16,8 +16,7 @@ const NAV = [
 export default function CarwashLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const ultimo = location.pathname.split('/').pop()
-  const current = ultimo === 'carwash' ? '' : ultimo
+  const current = location.pathname.split('/')[2] || ''
   const enMas = current === 'mas' || NAV.some((n) => !n.movil && n.path === current)
 
   return (

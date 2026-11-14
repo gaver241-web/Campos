@@ -1,4 +1,4 @@
-// DATOS DE EJEMPLO SOLO PARA EL DISEÑO (no se conecta a ningún servidor ni base de datos)
+// Constantes y ayudas del módulo Carwash
 
 export const CATEGORIAS = [
   { id: 'auto', nombre: 'Auto / Sedán', corto: 'Auto', emoji: '🚗' },
@@ -8,85 +8,106 @@ export const CATEGORIAS = [
   { id: 'moto', nombre: 'Moto', corto: 'Moto', emoji: '🏍️' },
 ]
 
-export const SERVICIOS = [
-  { id: 's1', nombre: 'Lavado básico', precios: { auto: 15, suv: 20, pickup: 22, minivan: 22, moto: 8 } },
-  { id: 's2', nombre: 'Lavado completo', precios: { auto: 25, suv: 32, pickup: 35, minivan: 35, moto: 12 } },
-  { id: 's3', nombre: 'Lavado de salón', precios: { auto: 60, suv: 80, pickup: 85, minivan: 90, moto: 0 } },
-  { id: 's4', nombre: 'Lavado de motor', precios: { auto: 20, suv: 25, pickup: 28, minivan: 28, moto: 12 } },
-  { id: 's5', nombre: 'Encerado', precios: { auto: 30, suv: 40, pickup: 45, minivan: 45, moto: 15 } },
-  { id: 's6', nombre: 'Pulido', precios: { auto: 150, suv: 200, pickup: 220, minivan: 220, moto: 70 } },
-]
+export const METODOS = ['Efectivo', 'Yape', 'Plin', 'Transferencia', 'Tarjeta']
 
-export const COMBOS = [
-  { id: 'c1', nombre: 'Combo Brillo Total', incluye: ['Lavado completo', 'Encerado'], precio: 49, ahorro: 6 },
-  { id: 'c2', nombre: 'Combo Salón + Motor', incluye: ['Lavado de salón', 'Lavado de motor'], precio: 70, ahorro: 10 },
-  { id: 'c3', nombre: 'Combo Premium', incluye: ['Lavado completo', 'Salón', 'Encerado'], precio: 105, ahorro: 20 },
-]
+export const ESTADOS = {
+  espera: 'En espera',
+  lavado: 'En lavado',
+  listo: 'Listo',
+  terminado: 'Terminado',
+}
 
-export const PRODUCTOS = [
-  { id: 'p1', nombre: 'Ambientador', tipo: 'Venta', stock: 24, minimo: 10, precio: 5 },
-  { id: 'p2', nombre: 'Silicona para tablero', tipo: 'Venta', stock: 6, minimo: 8, precio: 12 },
-  { id: 'p3', nombre: 'Agua mineral', tipo: 'Venta', stock: 30, minimo: 12, precio: 2 },
-  { id: 'p4', nombre: 'Shampoo (litros)', tipo: 'Insumo', stock: 18, minimo: 10, precio: 0 },
-  { id: 'p5', nombre: 'Cera líquida (litros)', tipo: 'Insumo', stock: 3, minimo: 5, precio: 0 },
-  { id: 'p6', nombre: 'Desengrasante (litros)', tipo: 'Insumo', stock: 9, minimo: 6, precio: 0 },
-]
+export const PLANTILLAS_BASE = {
+  ingreso: 'Hola {nombre}, recibimos tu vehículo {placa} en CARWASH CAMPOS. Sigue el avance aquí: {link}',
+  listo: 'Hola {nombre}, tu vehículo {placa} ya está listo para recoger. ¡Gracias por elegirnos!',
+  inactivo: 'Hola {nombre}, en CARWASH CAMPOS te extrañamos. Vuelve esta semana y te damos una sorpresa.',
+}
 
-export const ORDENES_INICIALES = [
-  { id: 'o1', placa: 'ABC-123', cat: 'auto', servicio: 'Lavado completo', hora: '08:10', estado: 'espera' },
-  { id: 'o2', placa: 'V4K-892', cat: 'suv', servicio: 'Salón + Motor', hora: '08:25', estado: 'espera' },
-  { id: 'o3', placa: 'D7P-410', cat: 'pickup', servicio: 'Lavado básico', hora: '07:50', estado: 'lavado' },
-  { id: 'o4', placa: 'B2Z-006', cat: 'auto', servicio: 'Brillo Total', hora: '07:30', estado: 'lavado' },
-  { id: 'o5', placa: '4521-MX', cat: 'moto', servicio: 'Lavado completo', hora: '07:15', estado: 'listo' },
-]
+export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 
-export const CLIENTES = [
-  { id: 'k1', nombre: 'Luis Paredes', tel: '987654321', placas: ['ABC-123'], visitas: 4, gasto: 420, ultima: 3, marca: 'Toyota Yaris' },
-  { id: 'k2', nombre: 'María Torres', tel: '956123789', placas: ['V4K-892', 'C8M-331'], visitas: 6, gasto: 910, ultima: 1, marca: 'Hyundai Tucson' },
-  { id: 'k3', nombre: 'Transportes El Sol', tel: '944100200', placas: ['D7P-410', 'D7P-411', 'D7P-420'], visitas: 18, gasto: 1860, ultima: 5, marca: 'Flota · Hilux', credito: true },
-  { id: 'k4', nombre: 'Jorge Quispe', tel: '921334455', placas: ['B2Z-006'], visitas: 2, gasto: 98, ultima: 19, marca: 'Kia Rio' },
-  { id: 'k5', nombre: 'Rosa Vega', tel: '989001122', placas: ['F9T-775'], visitas: 3, gasto: 210, ultima: 27, marca: 'Suzuki Swift' },
-  { id: 'k6', nombre: 'Carlos Ñahui', tel: '930445566', placas: ['4521-MX'], visitas: 5, gasto: 140, ultima: 2, marca: 'Honda XR150' },
-]
+export const soles = (n) =>
+  'S/ ' + Number(n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-export const HISTORIAL = [
-  { fecha: '10 nov', servicio: 'Lavado completo', monto: 25 },
-  { fecha: '27 oct', servicio: 'Lavado básico', monto: 15 },
-  { fecha: '09 oct', servicio: 'Brillo Total', monto: 49 },
-]
-
-export const CITAS = [
-  { id: 'a1', hora: '09:00', dur: 2, placa: 'V4K-892', cliente: 'María Torres', servicio: 'Pulido', cat: 'suv' },
-  { id: 'a2', hora: '11:30', dur: 3, placa: 'F9T-775', cliente: 'Rosa Vega', servicio: 'Tratamiento cerámico', cat: 'auto' },
-  { id: 'a3', hora: '15:00', dur: 1.5, placa: 'C8M-331', cliente: 'María Torres', servicio: 'Lavado de salón', cat: 'auto' },
-]
-
-export const MAQUINAS = [
-  { id: 'm1', nombre: 'Hidrolavadora Karcher', uso: 262, limite: 300, tarea: 'Cambio de aceite' },
-  { id: 'm2', nombre: 'Aspiradora industrial', uso: 140, limite: 250, tarea: 'Revisar filtros' },
-  { id: 'm3', nombre: 'Compresora', uso: 296, limite: 300, tarea: 'Revisión de empaques' },
-]
-
-export const CUENTAS = [
-  { id: 'x1', cliente: 'Transportes El Sol', detalle: '12 lavados · quincena 1', monto: 186, dias: 9 },
-  { id: 'x2', cliente: 'Taxi Lima Express', detalle: '7 lavados · quincena 1', monto: 98, dias: 4 },
-]
-
-export const EGRESOS = [
-  { id: 'g1', concepto: 'Compra de shampoo y cera', cat: 'Insumos', monto: 85, fecha: 'Hoy' },
-  { id: 'g2', concepto: 'Recibo de agua', cat: 'Servicios', monto: 120, fecha: 'Ayer' },
-  { id: 'g3', concepto: 'Mantenimiento hidrolavadora', cat: 'Mantenimiento', monto: 60, fecha: '11 nov' },
-]
-
-export const SEMANA = [
-  { d: 'Lun', v: 320 }, { d: 'Mar', v: 410 }, { d: 'Mié', v: 280 }, { d: 'Jue', v: 520 },
-  { d: 'Vie', v: 610 }, { d: 'Sáb', v: 790 }, { d: 'Dom', v: 450 },
-]
-
-export const TOP_SERVICIOS = [
-  { n: 'Lavado completo', c: 48 }, { n: 'Lavado básico', c: 35 }, { n: 'Brillo Total', c: 22 }, { n: 'Salón', c: 14 },
-]
-
-export const soles = (n) => 'S/ ' + Number(n).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 export const catNombre = (id) => (CATEGORIAS.find((c) => c.id === id) || {}).corto || id
 export const catEmoji = (id) => (CATEGORIAS.find((c) => c.id === id) || {}).emoji || '🚗'
+
+export const hoy = () => new Date().toLocaleDateString('en-CA')
+export const horaAhora = () => new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false })
+export const fechaCorta = (iso) => {
+  if (!iso) return ''
+  const [a, m, d] = iso.split('-')
+  return `${d}/${m}/${a}`
+}
+export const sumarDias = (iso, n) => {
+  const f = new Date(iso + 'T12:00:00')
+  f.setDate(f.getDate() + n)
+  return f.toLocaleDateString('en-CA')
+}
+export const diasEntre = (isoA, isoB) => Math.round((new Date(isoB + 'T12:00:00') - new Date(isoA + 'T12:00:00')) / 86400000)
+
+export const normPlaca = (p) => (p || '').toUpperCase().replace(/\s+/g, '').trim()
+
+export const rellenar = (texto, datos) =>
+  (texto || '').replace(/\{(\w+)\}/g, (_, k) => (datos[k] !== undefined ? datos[k] : `{${k}}`))
+
+export const urlSeguimiento = (placa) => `${window.location.origin}/#/carwash/estado/${encodeURIComponent(normPlaca(placa))}`
+
+export const linkWhatsApp = (tel, texto) => {
+  const n = (tel || '').replace(/\D/g, '')
+  const num = n.length === 9 ? '51' + n : n
+  return `https://wa.me/${num}?text=${encodeURIComponent(texto)}`
+}
+
+export function descargarCSV(nombre, filas) {
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const csv = '\ufeff' + filas.map((f) => f.map(esc).join(';')).join('\n')
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+export function comprimirImagen(file, max = 360, calidad = 0.55) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height))
+      const c = document.createElement('canvas')
+      c.width = Math.round(img.width * k)
+      c.height = Math.round(img.height * k)
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height)
+      URL.revokeObjectURL(url)
+      resolve(c.toDataURL('image/jpeg', calidad))
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
+// Datos de ejemplo opcionales (se cargan solo si el usuario lo pide en Configuración)
+export function ejemplos() {
+  const P = (a, s, p, m, mo) => ({ auto: a, suv: s, pickup: p, minivan: m, moto: mo })
+  const servicios = [
+    { id: uid(), nombre: 'Lavado básico', precios: P(15, 20, 22, 22, 8) },
+    { id: uid(), nombre: 'Lavado completo', precios: P(25, 32, 35, 35, 12) },
+    { id: uid(), nombre: 'Lavado de salón', precios: P(60, 80, 85, 90, 0) },
+    { id: uid(), nombre: 'Lavado de motor', precios: P(20, 25, 28, 28, 12) },
+    { id: uid(), nombre: 'Encerado', precios: P(30, 40, 45, 45, 15) },
+    { id: uid(), nombre: 'Pulido', precios: P(150, 200, 220, 220, 70) },
+  ]
+  const combos = [
+    { id: uid(), nombre: 'Combo Brillo Total', detalle: 'Lavado completo + Encerado', precios: P(49, 65, 72, 72, 24) },
+  ]
+  const productos = [
+    { id: uid(), nombre: 'Ambientador', tipo: 'Venta', precio: 5, stock: 24, minimo: 10 },
+    { id: uid(), nombre: 'Silicona para tablero', tipo: 'Venta', precio: 12, stock: 6, minimo: 8 },
+    { id: uid(), nombre: 'Shampoo (litros)', tipo: 'Insumo', precio: 0, stock: 18, minimo: 10 },
+  ]
+  const maquinas = [
+    { id: uid(), nombre: 'Hidrolavadora', tarea: 'Cambio de aceite', limite: 300, uso: 0 },
+  ]
+  return { servicios, combos, productos, maquinas }
+}

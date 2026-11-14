@@ -31,6 +31,7 @@ export default function App() {
         <Route path="/carwash" element={<CarwashLayout />}>
           <Route index element={<CwDashboard />} />
           <Route path="orden" element={<CwNuevaOrden />} />
+          <Route path="orden/:id" element={<CwNuevaOrden />} />
           <Route path="clientes" element={<CwClientes />} />
           <Route path="servicios" element={<CwServicios />} />
           <Route path="caja" element={<CwCaja />} />

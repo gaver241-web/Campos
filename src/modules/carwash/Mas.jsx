@@ -7,7 +7,6 @@ const ITEMS = [
   ['agenda', 'agenda', 'Agenda', 'Citas y mantenimiento de máquinas'],
   ['reportes', 'reportes', 'Reportes', 'Ventas y ganancia'],
   ['config', 'config', 'Configuración', 'Negocio y plantillas'],
-  ['estado/ABC-123', 'link', 'Ver seguimiento del cliente', 'Así lo ve el cliente en su celular'],
 ]
 
 export default function Mas() {
